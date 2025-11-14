@@ -109,7 +109,7 @@ This results in footnotes with support for multiple paragraphs, that work withou
 
 * Implementation
 
-In [[https://git.savannah.gnu.org/cgit/emacs/org-mode.git/tree/lisp/ox-html.el?h=release_9.6.5#n1858][Org mode 9.6.5]], the ~org-html-footnote-section~ looks like this:
+In [[https://cgit.git.savannah.gnu.org/cgit/emacs/org-mode.git/tree/lisp/ox-html.el?h=release_9.7.34#n1870][Org mode 9.7.34]] the ~org-html-footnote-section~ looks like this:
 
 #+headers: :noweb yes
 #+begin_src emacs-lisp
@@ -127,7 +127,7 @@ In [[https://git.savannah.gnu.org/cgit/emacs/org-mode.git/tree/lisp/ox-html.el?h
          (mapconcat
           (lambda (definition)
             (pcase definition
-              (`(,n ,_ ,def)
+              (`(,n ,label ,def)
                <<footnote-definitions>>)))
           definitions
           "\n"))))))
@@ -138,12 +138,24 @@ The interesting part is executed for each footnote, and wraps each footnote in a
 
 #+name: footnote-definitions
 #+begin_src emacs-lisp
+  ;; Do not assign number labels as they appear in Org mode
+  ;; - the footnotes are re-numbered by
+  ;; `org-export-get-footnote-number'.  If the label is not
+  ;; a number, keep it.
+  (when (and (stringp label)
+             (equal label (number-to-string (string-to-number label))))
+    (setq label nil))
+  ;; `org-export-collect-footnote-definitions' can return
+  ;; two kinds of footnote definitions: inline and blocks.
+  ;; Since this should not make any difference in the HTML
+  ;; output, we wrap the inline definitions within
+  ;; a "footpara" class paragraph.
   (let ((inline? (not (org-element-map def org-element-all-elements
                         #'identity nil t)))
         (anchor (org-html--anchor
-                 (format "fn.%d" n)
+                 (format "fn.%s" (or label n))
                  n
-                 (format " class=\"footnum\" href=\"#fnr.%d\" role=\"doc-backlink\"" n)
+                 (format " class=\"footnum\" href=\"#fnr.%s\" role=\"doc-backlink\"" (or label n))
                  info))
         (contents (org-trim (org-export-data def info))))
     (format "<div class=\"footdef\">%s %s</div>\n"
