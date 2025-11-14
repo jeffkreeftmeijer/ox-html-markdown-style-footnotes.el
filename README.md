@@ -78,44 +78,44 @@ INFO is a plist used as a communication channel."
       (format
        "\n%s\n"
        (mapconcat
-	(lambda (definition)
-	  (pcase definition
-	    (`(,n ,_ ,def)
-	     (let ((inline? (not (org-element-map def org-element-all-elements
-				   #'identity nil t)))
-		   (anchor (org-html--anchor
-			    (format "fn.%d" n)
-			    n
-			    (format " class=\"footnum\" href=\"#fnr.%d\" role=\"doc-backlink\"" n)
-			    info))
-		   (contents (org-trim (org-export-data def info))))
-	       (format "<div class=\"footdef\">%s %s</div>\n"
-		       (format (plist-get info :html-footnote-format) anchor)
-		       (format "<div class=\"footpara\" role=\"doc-footnote\">%s</div>"
-			       (if (not inline?) contents
-				 (format "<p class=\"footpara\">%s</p>"
-					 contents))))))))
-	definitions
-	"\n"))))))
+        (lambda (definition)
+          (pcase definition
+            (`(,n ,_ ,def)
+             (let ((inline? (not (org-element-map def org-element-all-elements
+                                   #'identity nil t)))
+                   (anchor (org-html--anchor
+                            (format "fn.%d" n)
+                            n
+                            (format " class=\"footnum\" href=\"#fnr.%d\" role=\"doc-backlink\"" n)
+                            info))
+                   (contents (org-trim (org-export-data def info))))
+               (format "<div class=\"footdef\">%s %s</div>\n"
+                       (format (plist-get info :html-footnote-format) anchor)
+                       (format "<div class=\"footpara\" role=\"doc-footnote\">%s</div>"
+                               (if (not inline?) contents
+                                 (format "<p class=\"footpara\">%s</p>"
+                                         contents))))))))
+        definitions
+        "\n"))))))
 ```
 
 The function returns nothing if there are no footnotes in the document, or uses the format set in `:html-footnotes-section` to print each footnote. The interesting part is executed for each footnote, and wraps each footnote in a `div` element with a link back to where the footnote is referenced from:
 
 ```emacs-lisp
 (let ((inline? (not (org-element-map def org-element-all-elements
-		      #'identity nil t)))
+                      #'identity nil t)))
       (anchor (org-html--anchor
-	       (format "fn.%d" n)
-	       n
-	       (format " class=\"footnum\" href=\"#fnr.%d\" role=\"doc-backlink\"" n)
-	       info))
+               (format "fn.%d" n)
+               n
+               (format " class=\"footnum\" href=\"#fnr.%d\" role=\"doc-backlink\"" n)
+               info))
       (contents (org-trim (org-export-data def info))))
   (format "<div class=\"footdef\">%s %s</div>\n"
-	  (format (plist-get info :html-footnote-format) anchor)
-	  (format "<div class=\"footpara\" role=\"doc-footnote\">%s</div>"
-		  (if (not inline?) contents
-		    (format "<p class=\"footpara\">%s</p>"
-			    contents)))))
+          (format (plist-get info :html-footnote-format) anchor)
+          (format "<div class=\"footpara\" role=\"doc-footnote\">%s</div>"
+                  (if (not inline?) contents
+                    (format "<p class=\"footpara\">%s</p>"
+                            contents)))))
 ```
 
 
@@ -157,25 +157,25 @@ The updated copy is defined as `org-html-markdown-style-footnotes--section`:
 ```emacs-lisp
 (defun org-html-markdown-style-footnotes--section (orig-fun info)
   (if org-html-markdown-style-footnotes
-      (pcase (org-export-collect-footnote-definitions info)
-	(`nil nil)
-	(definitions
-	 (format
-	  (plist-get info :html-footnotes-section)
-	  (org-html--translate "Footnotes" info)
-	  (format
-	   "<ol>\n%s</ol>\n"
-	   (mapconcat
-	    (lambda (definition)
-	      (pcase definition
-		(`(,n ,_ ,def)
-		 (format
-		  "<li id=\"fn.%d\" class=\"footdef\" role=\"doc-footnote\" tabindex=\"-1\">%s %s</li>\n"
-		  n
-		  (org-trim (org-export-data def info))
-		  (format "<a href=\"#fnr.%d\" role=\"doc-backlink\">↩&#65038;</a>" n)))))
-	    definitions
-	    "\n")))))
+        (pcase (org-export-collect-footnote-definitions info)
+          (`nil nil)
+          (definitions
+           (format
+            (plist-get info :html-footnotes-section)
+            (org-html--translate "Footnotes" info)
+            (format
+             "<ol>\n%s</ol>\n"
+             (mapconcat
+              (lambda (definition)
+                (pcase definition
+                  (`(,n ,_ ,def)
+                   (format
+                    "<li id=\"fn.%d\" class=\"footdef\" role=\"doc-footnote\" tabindex=\"-1\">%s %s</li>\n"
+                  n
+                    (org-trim (org-export-data def info))
+                    (format "<a href=\"#fnr.%d\" role=\"doc-backlink\">↩&#65038;</a>" n)))))
+              definitions
+              "\n")))))
     (funcall orig-fun info)))
 ```
 
@@ -186,12 +186,12 @@ To replace the original, the new function is added as advice. The package includ
 (defun org-html-markdown-style-footnotes-add ()
   (interactive)
   (advice-add 'org-html-footnote-section
-	      :around #'org-html-markdown-style-footnotes--section))
+              :around #'org-html-markdown-style-footnotes--section))
 
 (defun org-html-markdown-style-footnotes-remove ()
   (interactive)
   (advice-remove 'org-html-footnote-section
-		 #'org-html-markdown-style-footnotes--section))
+                 #'org-html-markdown-style-footnotes--section))
 ```
 
 The `:around` [advice strategy](https://www.gnu.org/software/emacs/manual/html_node/elisp/Advice-Combinators.html) is used instead of the more obvious `:override`, because it needs to be possible to disable the override through setting `org-html-markdown-style-footnotes` to `nil`. This isn't possible when using the `:override` strategy, which doesn't call the advice with a reference to the original function.
