@@ -11,6 +11,16 @@
 	   (with-current-buffer "*Org HTML Export*" (buffer-string))))
   (org-html-markdown-style-footnotes-remove))
 
+(ert-deftest labeled-footnote-test ()
+  (org-html-markdown-style-footnotes-add)
+  (find-file "test/fixtures/labeled-footnote.org")
+  (let ((org-html-markdown-style-footnotes t))
+    (org-html-export-as-html))
+  (should (string-match-p
+	   "<ol>\n<li id=\"fn.labeled\" class=\"footdef\" role=\"doc-footnote\" tabindex=\"-1\"><p class=\"footpara\">\nA footnote.\n</p>\n\n<p class=\"footpara\">\nWith a second paragraph.\n</p> <a href=\"#fnr.labeled\" role=\"doc-backlink\">↩&#65038;</a></li>\n</ol>"
+	   (with-current-buffer "*Org HTML Export*" (buffer-string))))
+  (org-html-markdown-style-footnotes-remove))
+
 (ert-deftest disabled-test ()
   (org-html-markdown-style-footnotes-add)
   (find-file "test/fixtures/footnote.org")
