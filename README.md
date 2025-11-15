@@ -63,7 +63,7 @@ This results in footnotes with support for multiple paragraphs, that work withou
 
 ## Implementation
 
-In [Org mode 9.6.5](https://git.savannah.gnu.org/cgit/emacs/org-mode.git/tree/lisp/ox-html.el?h=release_9.6.5#n1858), the `org-html-footnote-section` looks like this:
+In [Org mode 9.7.34](https://cgit.git.savannah.gnu.org/cgit/emacs/org-mode.git/tree/lisp/ox-html.el?h=release_9.7.34#n1870) the `org-html-footnote-section` looks like this:
 
 ```emacs-lisp
 (defun org-html-footnote-section (info)
@@ -80,13 +80,25 @@ INFO is a plist used as a communication channel."
        (mapconcat
         (lambda (definition)
           (pcase definition
-            (`(,n ,_ ,def)
+            (`(,n ,label ,def)
+             ;; Do not assign number labels as they appear in Org mode
+             ;; - the footnotes are re-numbered by
+             ;; `org-export-get-footnote-number'.  If the label is not
+             ;; a number, keep it.
+             (when (and (stringp label)
+                        (equal label (number-to-string (string-to-number label))))
+               (setq label nil))
+             ;; `org-export-collect-footnote-definitions' can return
+             ;; two kinds of footnote definitions: inline and blocks.
+             ;; Since this should not make any difference in the HTML
+             ;; output, we wrap the inline definitions within
+             ;; a "footpara" class paragraph.
              (let ((inline? (not (org-element-map def org-element-all-elements
                                    #'identity nil t)))
                    (anchor (org-html--anchor
-                            (format "fn.%d" n)
+                            (format "fn.%s" (or label n))
                             n
-                            (format " class=\"footnum\" href=\"#fnr.%d\" role=\"doc-backlink\"" n)
+                            (format " class=\"footnum\" href=\"#fnr.%s\" role=\"doc-backlink\"" (or label n))
                             info))
                    (contents (org-trim (org-export-data def info))))
                (format "<div class=\"footdef\">%s %s</div>\n"
@@ -102,12 +114,24 @@ INFO is a plist used as a communication channel."
 The function returns nothing if there are no footnotes in the document, or uses the format set in `:html-footnotes-section` to print each footnote. The interesting part is executed for each footnote, and wraps each footnote in a `div` element with a link back to where the footnote is referenced from:
 
 ```emacs-lisp
+;; Do not assign number labels as they appear in Org mode
+;; - the footnotes are re-numbered by
+;; `org-export-get-footnote-number'.  If the label is not
+;; a number, keep it.
+(when (and (stringp label)
+           (equal label (number-to-string (string-to-number label))))
+  (setq label nil))
+;; `org-export-collect-footnote-definitions' can return
+;; two kinds of footnote definitions: inline and blocks.
+;; Since this should not make any difference in the HTML
+;; output, we wrap the inline definitions within
+;; a "footpara" class paragraph.
 (let ((inline? (not (org-element-map def org-element-all-elements
                       #'identity nil t)))
       (anchor (org-html--anchor
-               (format "fn.%d" n)
+               (format "fn.%s" (or label n))
                n
-               (format " class=\"footnum\" href=\"#fnr.%d\" role=\"doc-backlink\"" n)
+               (format " class=\"footnum\" href=\"#fnr.%s\" role=\"doc-backlink\"" (or label n))
                info))
       (contents (org-trim (org-export-data def info))))
   (format "<div class=\"footdef\">%s %s</div>\n"
@@ -157,25 +181,25 @@ The updated copy is defined as `org-html-markdown-style-footnotes--section`:
 ```emacs-lisp
 (defun org-html-markdown-style-footnotes--section (orig-fun info)
   (if org-html-markdown-style-footnotes
-        (pcase (org-export-collect-footnote-definitions info)
-          (`nil nil)
-          (definitions
-           (format
-            (plist-get info :html-footnotes-section)
-            (org-html--translate "Footnotes" info)
-            (format
-             "<ol>\n%s</ol>\n"
-             (mapconcat
-              (lambda (definition)
-                (pcase definition
-                  (`(,n ,_ ,def)
-                   (format
-                    "<li id=\"fn.%d\" class=\"footdef\" role=\"doc-footnote\" tabindex=\"-1\">%s %s</li>\n"
-                  n
-                    (org-trim (org-export-data def info))
-                    (format "<a href=\"#fnr.%d\" role=\"doc-backlink\">↩&#65038;</a>" n)))))
-              definitions
-              "\n")))))
+      (pcase (org-export-collect-footnote-definitions info)
+        (`nil nil)
+        (definitions
+         (format
+          (plist-get info :html-footnotes-section)
+          (org-html--translate "Footnotes" info)
+          (format
+           "<ol>\n%s</ol>\n"
+           (mapconcat
+            (lambda (definition)
+              (pcase definition
+                (`(,n ,label ,def)
+                 (format
+                  "<li id=\"fn.%s\" class=\"footdef\" role=\"doc-footnote\" tabindex=\"-1\">%s %s</li>\n"
+                  (or label n)
+                  (org-trim (org-export-data def info))
+                  (format "<a href=\"#fnr.%s\" role=\"doc-backlink\">↩&#65038;</a>" (or label n))))))
+            definitions
+            "\n")))))
     (funcall orig-fun info)))
 ```
 
