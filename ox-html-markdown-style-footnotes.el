@@ -27,24 +27,24 @@
 (defun org-html-markdown-style-footnotes--section (orig-fun info)
   (if org-html-markdown-style-footnotes
       (pcase (org-export-collect-footnote-definitions info)
-	(`nil nil)
-	(definitions
-	 (format
-	  (plist-get info :html-footnotes-section)
-	  (org-html--translate "Footnotes" info)
-	  (format
-	   "<ol>\n%s</ol>\n"
-	   (mapconcat
-	    (lambda (definition)
-	      (pcase definition
-		(`(,n ,_ ,def)
-		 (format
-		  "<li id=\"fn.%d\" class=\"footdef\" role=\"doc-footnote\" tabindex=\"-1\">%s %s</li>\n"
-                  n
-		  (org-trim (org-export-data def info))
-		  (format "<a href=\"#fnr.%d\" role=\"doc-backlink\">↩&#65038;</a>" n)))))
-	    definitions
-	    "\n")))))
+        (`nil nil)
+        (definitions
+         (format
+          (plist-get info :html-footnotes-section)
+          (org-html--translate "Footnotes" info)
+          (format
+           "<ol>\n%s</ol>\n"
+           (mapconcat
+            (lambda (definition)
+              (pcase definition
+                (`(,n ,label ,def)
+                 (format
+                  "<li id=\"fn.%s\" class=\"footdef\" role=\"doc-footnote\" tabindex=\"-1\">%s %s</li>\n"
+                  (or label n)
+                  (org-trim (org-export-data def info))
+                  (format "<a href=\"#fnr.%s\" role=\"doc-backlink\">↩&#65038;</a>" (or label n))))))
+            definitions
+            "\n")))))
     (funcall orig-fun info)))
 
   ;;;###autoload

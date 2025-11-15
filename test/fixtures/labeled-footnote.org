@@ -1,0 +1,5 @@
+Hello, world![fn:labeled]
+
+[fn:labeled] A footnote.
+
+With a second paragraph.
