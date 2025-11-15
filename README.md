@@ -205,12 +205,11 @@ Finally, the package provides itself as `ox-html-markdown-style-footnotes`:
 
 ## Installation and usage
 
-Ox-html-markdown-style-footnotes is currently not available through any of the package registries. Instead, install it from the git repository directly. Install the package with [use-package](https://github.com/jwiegley/use-package) and [straight.el](https://github.com/radian-software/straight.el), and enable it by calling `org-html-markdown-style-footnotes-add`:
+Ox-html-markdown-style-footnotes is currently not available through any of the package registries. Instead, install it from the git repository directly. Install the package with [use-package](https://github.com/jwiegley/use-package), and enable it by calling `org-html-markdown-style-footnotes-add`:
 
 ```emacs-lisp
-(use-package ox-md-title
-  :straight
-  (ox-html-markown-style-footnotes :type git :host codeberg :repo "jkreeftmeijer/ox-html-markdown-style-footnotes.el")
+(use-package ox-html-markdown-style-footnotes
+  :vc (:url "https://github.com/jeffkreeftmeijer/ox-html-markdown-style-footnotes.el.git")
   :config
   (org-html-markdown-style-footnotes-add))
 ```
