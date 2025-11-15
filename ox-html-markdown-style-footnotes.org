@@ -246,12 +246,12 @@ The updated copy is defined as ~org-html-markdown-style-footnotes--section~:
              (mapconcat
               (lambda (definition)
                 (pcase definition
-                  (`(,n ,_ ,def)
+                  (`(,n ,label ,def)
                    (format
-                    "<li id=\"fn.%d\" class=\"footdef\" role=\"doc-footnote\" tabindex=\"-1\">%s %s</li>\n"
-                    n
+                    "<li id=\"fn.%s\" class=\"footdef\" role=\"doc-footnote\" tabindex=\"-1\">%s %s</li>\n"
+                    (or label n)
                     (org-trim (org-export-data def info))
-                    (format "<a href=\"#fnr.%d\" role=\"doc-backlink\">↩&#65038;</a>" n)))))
+                    (format "<a href=\"#fnr.%s\" role=\"doc-backlink\">↩&#65038;</a>" (or label n))))))
               definitions
               "\n")))))
       (funcall orig-fun info)))
