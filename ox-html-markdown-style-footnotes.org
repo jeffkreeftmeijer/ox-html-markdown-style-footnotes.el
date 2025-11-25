@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID:       0CBCCEE0-6392-4EC6-BC6A-AB837306B7EB
 :ROAM_ALIASES: ox-html-markdown-style-footnotes
+:ROAM_TAGS: [[id:D4C028F0-71B4-4FCD-9D17-68802F29A4F0][Org mode]]
 :END:
 #+title: ox-html-markdown-style-footnotes: Markdown-style footnotes for ox-html.el
 #+author: Jeff Kreeftmeijer
